@@ -6,10 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import deployedContracts from "../../contracts/deployedContracts";
 import { EventRepository } from "../../repositories/EventRepository";
 import { SeatRepository } from "../../repositories/SeatRepository";
+import scaffoldConfig from "../../scaffold.config";
 import { Reservation } from "../../types/ticket";
 import { Address } from "@scaffold-ui/components";
 import { formatEther } from "viem";
-import { hardhat } from "viem/chains";
 import { useAccount, useBalance, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import {
   ArrowLeftIcon,
@@ -25,7 +25,8 @@ import {
 
 // Get contract config
 const getContractConfig = () => {
-  const chainId = hardhat.id;
+  const targetChain = scaffoldConfig.targetNetworks[0];
+  const chainId = targetChain.id;
   const contracts = deployedContracts as any;
 
   if (!contracts[chainId]?.MonadTicketSale) {

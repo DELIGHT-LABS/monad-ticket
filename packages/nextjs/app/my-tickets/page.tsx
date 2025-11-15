@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import deployedContracts from "../../contracts/deployedContracts";
 import { EventRepository } from "../../repositories/EventRepository";
+import scaffoldConfig from "../../scaffold.config";
 import { EventUI } from "../../types/ticket";
 import { Address } from "@scaffold-ui/components";
 import { createPublicClient, formatEther, http } from "viem";
-import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
 import { CalendarIcon, MapPinIcon, TicketIcon, WalletIcon } from "@heroicons/react/24/outline";
 
@@ -22,7 +22,8 @@ interface UserTicket {
 
 // Get contract config
 const getContractConfig = () => {
-  const chainId = hardhat.id;
+  const targetChain = scaffoldConfig.targetNetworks[0];
+  const chainId = targetChain.id;
   const contracts = deployedContracts as any;
 
   if (!contracts[chainId]?.MonadTicketSale) {
@@ -36,8 +37,9 @@ const getContractConfig = () => {
 };
 
 // Create a public client
+const targetChain = scaffoldConfig.targetNetworks[0];
 const publicClient = createPublicClient({
-  chain: hardhat,
+  chain: targetChain,
   transport: http(),
 });
 
