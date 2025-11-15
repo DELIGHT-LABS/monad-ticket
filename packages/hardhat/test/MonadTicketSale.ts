@@ -254,4 +254,126 @@ describe("MonadTicketSale", function () {
       expect(result.availabilities[0]).to.equal(false);
     });
   });
+
+  describe("Settlement System", function () {
+    let settlementEventId: bigint;
+    const vipPrice = ethers.parseEther("1.0");
+    const standardPrice = ethers.parseEther("0.5");
+
+    before(async () => {
+      // Create a new event for settlement tests (far in the future to avoid time manipulation issues)
+      const eventDate = Math.floor(Date.now() / 1000) + 86400 * 30; // 30 days from now
+      await monadTicketSale.connect(issuer).createEvent(
+        "Settlement Event",
+        eventDate,
+        ["VIP", "Standard"],
+        [vipPrice, standardPrice],
+        [2, 2],
+        [
+          ["S-01", "S-02"],
+          ["S-03", "S-04"],
+        ],
+      );
+      settlementEventId = 3n; // This should be the 3rd event
+    });
+
+    it("Should store revenue in contract when tickets are purchased", async function () {
+      const platformFeeBalanceBefore = await monadTicketSale.platformFeeBalance();
+
+      await monadTicketSale.connect(buyer1).buyTicket(settlementEventId, "S-01", { value: vipPrice });
+
+      const revenue = await monadTicketSale.eventRevenue(settlementEventId);
+      const platformFee = (vipPrice * 2n) / 100n; // 2% fee
+      const expectedRevenue = vipPrice - platformFee;
+
+      expect(revenue).to.equal(expectedRevenue);
+      expect(await monadTicketSale.platformFeeBalance()).to.equal(platformFeeBalanceBefore + platformFee);
+    });
+
+    it("Should accumulate revenue from multiple ticket sales", async function () {
+      await monadTicketSale.connect(buyer2).buyTicket(settlementEventId, "S-03", { value: standardPrice });
+
+      const totalPaid = vipPrice + standardPrice;
+      const platformFee = (totalPaid * 2n) / 100n;
+      const expectedRevenue = totalPaid - platformFee;
+
+      const revenue = await monadTicketSale.eventRevenue(settlementEventId);
+      expect(revenue).to.equal(expectedRevenue);
+    });
+
+    it("Should not allow withdrawal before event ends", async function () {
+      await expect(monadTicketSale.connect(issuer).withdrawEventRevenue(settlementEventId)).to.be.revertedWith(
+        "Event not ended yet",
+      );
+    });
+
+    it("Should return zero for withdrawable revenue before event ends", async function () {
+      const withdrawable = await monadTicketSale.getWithdrawableRevenue(settlementEventId);
+      expect(withdrawable).to.equal(0);
+    });
+
+    it("Should allow withdrawal after event ends", async function () {
+      // Fast forward time by 31 days (event is 30 days from creation)
+      await ethers.provider.send("evm_increaseTime", [86400 * 31]);
+      await ethers.provider.send("evm_mine", []);
+
+      const revenue = await monadTicketSale.eventRevenue(settlementEventId);
+      const balanceBefore = await ethers.provider.getBalance(issuer.address);
+
+      const tx = await monadTicketSale.connect(issuer).withdrawEventRevenue(settlementEventId);
+      const receipt = await tx.wait();
+      const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
+
+      const balanceAfter = await ethers.provider.getBalance(issuer.address);
+      const expectedBalance = balanceBefore + revenue - gasUsed;
+
+      expect(balanceAfter).to.equal(expectedBalance);
+    });
+
+    it("Should prevent double withdrawal", async function () {
+      await expect(monadTicketSale.connect(issuer).withdrawEventRevenue(settlementEventId)).to.be.revertedWith(
+        "Revenue already withdrawn",
+      );
+    });
+
+    it("Should allow owner to withdraw platform fees", async function () {
+      const platformFeeBalance = await monadTicketSale.platformFeeBalance();
+      const signers = await ethers.getSigners();
+      const owner = signers[0];
+
+      const balanceBefore = await ethers.provider.getBalance(owner.address);
+
+      const tx = await monadTicketSale.connect(owner).withdrawPlatformFee();
+      const receipt = await tx.wait();
+      const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
+
+      const balanceAfter = await ethers.provider.getBalance(owner.address);
+      const expectedBalance = balanceBefore + platformFeeBalance - gasUsed;
+
+      expect(balanceAfter).to.equal(expectedBalance);
+      expect(await monadTicketSale.platformFeeBalance()).to.equal(0);
+    });
+
+    it("Should not allow non-owner to withdraw platform fees", async function () {
+      await expect(monadTicketSale.connect(issuer).withdrawPlatformFee()).to.be.revertedWithCustomError(
+        monadTicketSale,
+        "OwnableUnauthorizedAccount",
+      );
+    });
+
+    it("Should not allow non-issuer to withdraw event revenue", async function () {
+      // Create another event (event 4) in the far future
+      const futureEventDate = Math.floor(Date.now() / 1000) + 86400 * 100; // 100 days from now
+      await monadTicketSale
+        .connect(issuer)
+        .createEvent("Future Event", futureEventDate, ["VIP"], [vipPrice], [1], [["P-01"]]);
+
+      // Fast forward past the event date
+      await ethers.provider.send("evm_increaseTime", [86400 * 101]);
+      await ethers.provider.send("evm_mine", []);
+
+      // Try to withdraw as buyer1 (non-issuer)
+      await expect(monadTicketSale.connect(buyer1).withdrawEventRevenue(4n)).to.be.revertedWith("Not event issuer");
+    });
+  });
 });

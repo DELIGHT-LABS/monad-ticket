@@ -37,6 +37,12 @@ contract MonadTicketSale is ERC721, Ownable {
     // All events list
     uint256[] private allEventIds;
 
+    // Settlement system
+    mapping(uint256 => uint256) public eventRevenue; // eventId => total revenue
+    mapping(uint256 => bool) public eventWithdrawn; // eventId => withdrawal status
+    uint256 public platformFeeBalance; // Accumulated platform fees
+    uint256 public platformFeePercent = 2; // 2% platform fee
+
     // ========== EVENTS ==========
 
     event EventCreated(
@@ -56,6 +62,10 @@ contract MonadTicketSale is ERC721, Ownable {
         string seatId,
         uint256 price
     );
+
+    event RevenueWithdrawn(uint256 indexed eventId, address indexed issuer, uint256 amount, uint256 platformFee);
+
+    event PlatformFeeWithdrawn(address indexed owner, uint256 amount);
 
     // ========== CONSTRUCTOR ==========
 
@@ -179,9 +189,13 @@ contract MonadTicketSale is ERC721, Ownable {
         tier.soldCount++;
         events[_eventId].soldTickets++;
 
-        // Transfer payment to issuer
-        (bool success, ) = events[_eventId].issuer.call{ value: msg.value }("");
-        require(success, "Payment transfer failed");
+        // Store payment in contract (settlement system)
+        // Calculate platform fee (2%)
+        uint256 platformFee = (msg.value * platformFeePercent) / 100;
+        uint256 issuerAmount = msg.value - platformFee;
+
+        eventRevenue[_eventId] += issuerAmount;
+        platformFeeBalance += platformFee;
 
         emit TicketPurchased(tokenId, _eventId, msg.sender, _seatId, tier.price);
 
@@ -363,6 +377,65 @@ contract MonadTicketSale is ERC721, Ownable {
     function deactivateEvent(uint256 _eventId) external {
         require(events[_eventId].issuer == msg.sender, "Not event issuer");
         events[_eventId].isActive = false;
+    }
+
+    // ========== SETTLEMENT FUNCTIONS ==========
+
+    /**
+     * @notice Withdraw event revenue after event ends
+     * @param _eventId Event ID
+     */
+    function withdrawEventRevenue(uint256 _eventId) external {
+        Event storage eventData = events[_eventId];
+
+        require(eventData.issuer == msg.sender, "Not event issuer");
+        require(block.timestamp > eventData.eventDate, "Event not ended yet");
+        require(!eventWithdrawn[_eventId], "Revenue already withdrawn");
+        require(eventRevenue[_eventId] > 0, "No revenue to withdraw");
+
+        uint256 amount = eventRevenue[_eventId];
+        eventWithdrawn[_eventId] = true;
+
+        // Transfer revenue to issuer
+        (bool success, ) = msg.sender.call{ value: amount }("");
+        require(success, "Transfer failed");
+
+        uint256 platformFee = (amount * platformFeePercent) / (100 - platformFeePercent);
+        emit RevenueWithdrawn(_eventId, msg.sender, amount, platformFee);
+
+        console.log("Revenue withdrawn for event:", _eventId, "Amount:", amount);
+    }
+
+    /**
+     * @notice Withdraw accumulated platform fees (owner only)
+     */
+    function withdrawPlatformFee() external onlyOwner {
+        require(platformFeeBalance > 0, "No platform fees to withdraw");
+
+        uint256 amount = platformFeeBalance;
+        platformFeeBalance = 0;
+
+        (bool success, ) = msg.sender.call{ value: amount }("");
+        require(success, "Transfer failed");
+
+        emit PlatformFeeWithdrawn(msg.sender, amount);
+
+        console.log("Platform fee withdrawn:", amount);
+    }
+
+    /**
+     * @notice Get withdrawable revenue for an event
+     * @param _eventId Event ID
+     * @return amount Withdrawable amount
+     */
+    function getWithdrawableRevenue(uint256 _eventId) external view returns (uint256) {
+        if (eventWithdrawn[_eventId]) {
+            return 0;
+        }
+        if (block.timestamp <= events[_eventId].eventDate) {
+            return 0;
+        }
+        return eventRevenue[_eventId];
     }
 
     /**
