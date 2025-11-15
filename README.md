@@ -37,7 +37,7 @@ sequenceDiagram
     Client->>Contract: Event 좌석 구매 request
     Contract->>Contract: counter 증가
     Contract->>Contract: 구매 처리
-    Contract->>Issuer: 구매 증명 발급
+    Contract->>Client: 구매 증명 발급
 ```
 
 ## Monad에서 가능한가?
