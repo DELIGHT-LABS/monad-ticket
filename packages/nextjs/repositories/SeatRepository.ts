@@ -1,11 +1,12 @@
 import deployedContracts from "../contracts/deployedContracts";
+import scaffoldConfig from "../scaffold.config";
 import { Reservation, Seat } from "../types/ticket";
 import { createPublicClient, formatEther, http } from "viem";
-import { hardhat } from "viem/chains";
 
 // Get the contract ABI and address
 const getContractConfig = () => {
-  const chainId = hardhat.id;
+  const targetChain = scaffoldConfig.targetNetworks[0];
+  const chainId = targetChain.id;
   const contracts = deployedContracts as any;
 
   if (!contracts[chainId]?.MonadTicketSale) {
@@ -19,8 +20,9 @@ const getContractConfig = () => {
 };
 
 // Create a public client for reading contract data
+const targetChain = scaffoldConfig.targetNetworks[0];
 const publicClient = createPublicClient({
-  chain: hardhat,
+  chain: targetChain,
   transport: http(),
 });
 

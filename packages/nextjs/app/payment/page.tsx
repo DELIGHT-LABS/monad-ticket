@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import deployedContracts from "../../contracts/deployedContracts";
@@ -38,7 +38,7 @@ const getContractConfig = () => {
   };
 };
 
-export default function PaymentPage() {
+function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const reservationId = searchParams.get("reservationId");
@@ -655,5 +655,19 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <span className="loading loading-spinner loading-lg text-[#6E54FF]"></span>
+        </div>
+      }
+    >
+      <PaymentContent />
+    </Suspense>
   );
 }

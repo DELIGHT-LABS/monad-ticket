@@ -1,17 +1,16 @@
-
 "use client";
 
-import { useAccount } from "wagmi";
-import type { NextPage } from "next";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import type { NextPage } from "next";
+import { useAccount } from "wagmi";
 import {
-  TicketIcon,
-  ShieldCheckIcon,
   BoltIcon,
   CheckBadgeIcon,
   ClockIcon,
   RectangleStackIcon,
+  ShieldCheckIcon,
+  TicketIcon,
 } from "@heroicons/react/24/outline";
 
 const Home: NextPage = () => {
@@ -57,14 +56,16 @@ const Home: NextPage = () => {
           >
             <div className="max-w-5xl mx-auto text-center">
               <h1 className="text-7xl md:text-8xl font-bold monad-gradient-text font-mono mb-8 animate-fade-in">
-                Ticketing<br/>with Monad
+                Ticketing
+                <br />
+                with Monad
               </h1>
               <p className="text-3xl md:text-4xl font-bold text-base-content mb-6 animate-fade-in-delay-1">
                 Fair Queuing Ticketing System
               </p>
               <p className="text-xl text-base-content/70 font-mono max-w-3xl mx-auto mb-12 leading-relaxed animate-fade-in-delay-2">
-                Leverage Monad's high-throughput blockchain to eliminate unfair ticketing practices. No more browser
-                crashes, no more lost opportunities.
+                Leverage Monad&apos;s high-throughput blockchain to eliminate unfair ticketing practices. No more
+                browser crashes, no more lost opportunities.
               </p>
 
               <div className="flex gap-4 justify-center flex-wrap animate-fade-in-delay-3">
@@ -150,7 +151,7 @@ const Home: NextPage = () => {
                   <BoltIcon className="h-12 w-12 text-[#6E54FF] mx-auto mb-4 group-hover:animate-bounce" />
                   <h3 className="text-xl font-bold mb-3 font-mono monad-gradient-text">High-TPS Blockchain</h3>
                   <p className="text-sm text-base-content/80 font-mono">
-                    Leverage Monad's exceptional transaction throughput for seamless ticket processing
+                    Leverage Monad&apos;s exceptional transaction throughput for seamless ticket processing
                   </p>
                 </div>
 
@@ -202,8 +203,8 @@ const Home: NextPage = () => {
                   <div>
                     <h3 className="text-2xl font-bold mb-3 font-mono">Fair Queue System</h3>
                     <p className="text-base-content/80 font-mono">
-                      Users submit purchase requests with transaction order preserved in the mempool, ensuring first-come
-                      first-served fairness
+                      Users submit purchase requests with transaction order preserved in the mempool, ensuring
+                      first-come first-served fairness
                     </p>
                   </div>
                 </div>
@@ -235,7 +236,7 @@ const Home: NextPage = () => {
                 Future Enhancements
               </h2>
               <p className="text-lg text-center text-base-content/70 font-mono mb-12 max-w-3xl mx-auto">
-                We're continuously improving TMON to provide the best ticketing experience
+                We&apos;re continuously improving TMON to provide the best ticketing experience
               </p>
 
               <div className="grid md:grid-cols-3 gap-6">
