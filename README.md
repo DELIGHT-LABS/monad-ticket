@@ -1,80 +1,63 @@
-# 🏗 Scaffold-ETH 2
+<img src="imgs/t-mon.png" width=250px/>
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+# T-MON (Ticket Monad)
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+<h3>Monad의 높은 TPS를 이용한 선착순 티켓팅 시스템</h3>
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
+## Pain point
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+- 티켓팅때마다 줄 일찍 서고 브라우저 켜 놓고 있어야 하는 불편함
+- 줄 일찍 섰다가 브라우저 오류로 튕기는 등, 브라우저 튕길 엑션을 하면, 노력이 말짱 헛수고가 됨
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+## Solution
 
-## Requirements
+Monad 기반 fair queuing 티켓팅 시스템
 
-Before you begin, you need to install the following tools:
+## Diagram
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+```mermaid
+sequenceDiagram
+    participant Client as client
+    participant Issuer as Issuer
+    participant Contract as contract
 
-## Quickstart
+    %% Event 등록
+    Issuer->>Contract: Event 등록
+    Contract-->>Issuer: 
 
-To get started with Scaffold-ETH 2, follow the steps below:
+    %% Event 목록 조회
+    Client->>Contract: Event 목록 조회
+    Contract-->>Client:
 
-1. Install dependencies if it was skipped in CLI:
+    %% Event 좌석 조회
+    Client->>Contract: Event 좌석 조회
+    Contract-->>Client:
 
-```
-cd my-dapp-example
-yarn install
-```
-
-2. Run a local network in the first terminal:
-
-```
-yarn chain
+    %% Event 좌석 구매
+    Client->>Contract: Event 좌석 구매 request
+    Contract->>Contract: counter 증가
+    Contract->>Contract: 구매 처리
+    Contract->>Client: 구매 증명 발급
 ```
 
-This command starts a local Ethereum network using Hardhat. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/hardhat/hardhat.config.ts`.
+## Monad에서 가능한가?
 
-3. On a second terminal, deploy the test contract:
+### 의문1: Monad의 async성과의 충돌?
 
-```
-yarn deploy
-```
+- 만약 모든 tx가 async하게 처리된다면, 선착순과 상관없이 노드에서 처리되는 순서가 랜덤해질 가능성
+- 실행은 optimistic async하지만, tx 들어온 순서는 보장되며 commit은 순차적으로 진행
+- Tx 접수 mempool 순서 보장
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
+### 의문2: MEV protection
 
-4. On a third terminal, start your NextJS app:
+- Validator가 수수료 수익 최적화를 위해 Tx 처리 순서를 reorg
+- Contract 내 index 처리
 
-```
-yarn start
-```
+## 개선점
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
-
-Run smart contract test with `yarn hardhat:test`
-
-- Edit your smart contracts in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
-
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+- Monad + EVM contract 기반 fair queuing
+  - Minting같은 on-chain에는 instant minting이기에 queuing이 필요없음
+  - Web2 ticketing과 연동한다면 지갑 기반 티켓팅 트래픽 통제 솔루션으로 발전 가능
+- MEV protection 개선방법
+  - Hash만 제출 후 추후 선착순 여부 확인 (commit - reveal)
+  - Hash 단계에서 deposit 제출 (reveal시 환불)
