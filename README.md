@@ -1,3 +1,5 @@
+<img src="imgs/t-mon.png" width=250px/>
+
 # T-MON (Ticket Monad)
 
 <h3>Monad의 높은 TPS를 이용한 선착순 티켓팅 시스템</h3>
