@@ -1,6 +1,6 @@
-import { EventUI } from "../types/ticket";
 import deployedContracts from "../contracts/deployedContracts";
-import { createPublicClient, http, formatEther } from "viem";
+import { EventUI } from "../types/ticket";
+import { createPublicClient, formatEther, http } from "viem";
 import { hardhat } from "viem/chains";
 
 // Hardcoded UI enhancements for events
@@ -38,7 +38,8 @@ const EVENT_UI_DATA: Record<
     category: "Concert",
   },
   "Monad Developer Conference 2025": {
-    description: "Join us for the biggest Monad developer conference. Learn about blockchain technology and network with industry leaders.",
+    description:
+      "Join us for the biggest Monad developer conference. Learn about blockchain technology and network with industry leaders.",
     location: "COEX Convention Center, Seoul",
     imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800",
     category: "Conference",
@@ -76,6 +77,7 @@ export class EventRepository {
         address,
         abi,
         functionName: "getAllEvents",
+        args: [],
       })) as any[];
 
       // Transform contract events to UI events with hardcoded data
@@ -89,7 +91,10 @@ export class EventRepository {
             args: [event.eventId],
           })) as any[];
 
-          const minPriceBigInt = tiers.reduce((min, tier) => (tier.price < min ? tier.price : min), tiers[0]?.price || 0n);
+          const minPriceBigInt = tiers.reduce(
+            (min, tier) => (tier.price < min ? tier.price : min),
+            tiers[0]?.price || 0n,
+          );
           const minPrice = parseFloat(formatEther(minPriceBigInt));
 
           const uiData = EVENT_UI_DATA[event.name] || {

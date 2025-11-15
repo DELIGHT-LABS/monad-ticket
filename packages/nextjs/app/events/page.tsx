@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { EventUI } from "../../types/ticket";
-import { EventRepository } from "../../repositories/EventRepository";
+import { useEffect, useState } from "react";
 import { EventCard } from "../../components/ticketing/EventCard";
+import { EventRepository } from "../../repositories/EventRepository";
+import { EventUI } from "../../types/ticket";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 const CATEGORIES = ["All", "Conference", "Concert", "Festival"];
@@ -47,7 +47,7 @@ export default function EventsPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         event =>
-          event.title.toLowerCase().includes(query) ||
+          event.name.toLowerCase().includes(query) ||
           event.description.toLowerCase().includes(query) ||
           event.location.toLowerCase().includes(query),
       );
@@ -93,9 +93,7 @@ export default function EventsPage() {
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`btn btn-sm font-mono transition-all ${
-                selectedCategory === category
-                  ? "monad-gradient text-white border-none monad-glow"
-                  : "glass-button"
+                selectedCategory === category ? "monad-gradient text-white border-none monad-glow" : "glass-button"
               }`}
             >
               {category}
@@ -118,7 +116,7 @@ export default function EventsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {filteredEvents.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.eventId.toString()} event={event} />
             ))}
           </div>
         )}

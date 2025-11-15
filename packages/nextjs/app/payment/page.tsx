@@ -1,27 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { Reservation } from "../../types/ticket";
-import { SeatRepository } from "../../repositories/SeatRepository";
-import { EventRepository } from "../../repositories/EventRepository";
-import {
-  ArrowLeftIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  WalletIcon,
-  ClockIcon,
-  ShieldCheckIcon,
-  ExclamationTriangleIcon,
-  BoltIcon,
-  CheckBadgeIcon,
-} from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import deployedContracts from "../../contracts/deployedContracts";
+import { EventRepository } from "../../repositories/EventRepository";
+import { SeatRepository } from "../../repositories/SeatRepository";
+import { Reservation } from "../../types/ticket";
 import { Address } from "@scaffold-ui/components";
 import { formatEther } from "viem";
-import deployedContracts from "../../contracts/deployedContracts";
 import { hardhat } from "viem/chains";
+import { useAccount, useBalance, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import {
+  ArrowLeftIcon,
+  BoltIcon,
+  CheckBadgeIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  ShieldCheckIcon,
+  WalletIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 // Get contract config
 const getContractConfig = () => {
@@ -422,7 +422,9 @@ export default function PaymentPage() {
                   <div className="text-center py-8">
                     <WalletIcon className="h-16 w-16 mx-auto text-base-content/30 mb-4" />
                     <p className="font-mono text-base-content/70 mb-4">Connect your wallet to continue</p>
-                    <p className="font-mono text-xs text-base-content/50">You need to connect a wallet to mint NFT tickets</p>
+                    <p className="font-mono text-xs text-base-content/50">
+                      You need to connect a wallet to mint NFT tickets
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -465,7 +467,7 @@ export default function PaymentPage() {
                             <span
                               className={`font-mono text-sm font-bold ${hasEnoughBalance ? "text-[#34eeb6]" : "text-[#FF8EE4]"}`}
                             >
-                              {currentBalance.toFixed(4)} ETH
+                              {currentBalance.toFixed(4)} MON
                             </span>
                           </div>
                         )}
@@ -482,7 +484,7 @@ export default function PaymentPage() {
                       </div>
                       {!hasEnoughBalance && !isBalanceLoading && (
                         <p className="text-xs font-mono text-[#FF8EE4] mt-2">
-                          Need {balanceShortfall.toFixed(4)} ETH more
+                          Need {balanceShortfall.toFixed(4)} MON more
                         </p>
                       )}
                     </div>
@@ -493,27 +495,27 @@ export default function PaymentPage() {
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-mono text-base-content/60">Ticket Price</span>
-                          <span className="text-sm font-mono font-semibold">{ticketPrice.toFixed(4)} ETH</span>
+                          <span className="text-sm font-mono font-semibold">{ticketPrice.toFixed(4)} MON</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-1">
                             <BoltIcon className="h-3 w-3 text-[#FFAE45]" />
                             <span className="text-xs font-mono text-base-content/60">Estimated Gas</span>
                           </div>
-                          <span className="text-sm font-mono font-semibold">{estimatedGasFee.toFixed(4)} ETH</span>
+                          <span className="text-sm font-mono font-semibold">{estimatedGasFee.toFixed(4)} MON</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-1">
                             <ShieldCheckIcon className="h-3 w-3 text-[#85E6FF]" />
                             <span className="text-xs font-mono text-base-content/60">Safety Buffer</span>
                           </div>
-                          <span className="text-sm font-mono font-semibold">{buffer.toFixed(4)} ETH</span>
+                          <span className="text-sm font-mono font-semibold">{buffer.toFixed(4)} MON</span>
                         </div>
                         <div className="divider my-2"></div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-mono font-bold">Total Required</span>
                           <span className="text-lg font-mono font-bold monad-gradient-text">
-                            {totalRequired.toFixed(4)} ETH
+                            {totalRequired.toFixed(4)} MON
                           </span>
                         </div>
                       </div>
@@ -539,7 +541,7 @@ export default function PaymentPage() {
                           <div>
                             <p className="text-xs font-mono font-semibold text-[#FF8EE4]">Insufficient Balance</p>
                             <p className="text-xs font-mono text-base-content/60 mt-1">
-                              Please add {balanceShortfall.toFixed(4)} ETH to your wallet to continue
+                              Please add {balanceShortfall.toFixed(4)} MON to your wallet to continue
                             </p>
                           </div>
                         </div>
@@ -625,7 +627,9 @@ export default function PaymentPage() {
                             <p className="font-mono font-semibold">{seat.seatId}</p>
                             <p className="font-mono text-xs text-base-content/60">Token #{seat.tokenId.toString()}</p>
                           </div>
-                          <span className="font-semibold font-mono">{parseFloat(formatEther(seat.price)).toFixed(4)} ETH</span>
+                          <span className="font-semibold font-mono">
+                            {parseFloat(formatEther(seat.price)).toFixed(4)} MON
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -641,7 +645,7 @@ export default function PaymentPage() {
                   <div className="glass-card-strong p-4 monad-glow">
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span className="font-mono">Total:</span>
-                      <span className="monad-gradient-text font-mono">{reservation.totalPrice.toFixed(4)} ETH</span>
+                      <span className="monad-gradient-text font-mono">{reservation.totalPrice.toFixed(4)} MON</span>
                     </div>
                   </div>
                 </div>

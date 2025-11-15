@@ -1,7 +1,7 @@
 "use client";
 
-import { EventUI } from "../../types/ticket";
 import Link from "next/link";
+import { EventUI } from "../../types/ticket";
 import { CalendarIcon, MapPinIcon, TicketIcon } from "@heroicons/react/24/outline";
 
 interface EventCardProps {
@@ -29,7 +29,7 @@ export const EventCard = ({ event }: EventCardProps) => {
         <div className="absolute inset-0 bg-gradient-to-br from-[#6E54FF]/20 to-[#85E6FF]/20 z-10"></div>
         <img
           src={event.imageUrl}
-          alt={event.title}
+          alt={event.name}
           className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute top-3 right-3 z-20">
@@ -70,9 +70,7 @@ export const EventCard = ({ event }: EventCardProps) => {
         </div>
 
         <div className="card-actions justify-between items-center mt-4">
-          <div className="text-2xl font-bold monad-gradient-text font-mono">
-            {event.minPrice.toFixed(2)} ETH-
-          </div>
+          <div className="text-2xl font-bold monad-gradient-text font-mono">{event.minPrice.toFixed(2)} MON</div>
           <Link
             href={`/seats/${event.eventId.toString()}`}
             className="btn monad-gradient text-white border-none hover:monad-glow font-mono"

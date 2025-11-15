@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { EventUI, Seat } from "../../../types/ticket";
+import { SeatMap } from "../../../components/ticketing/SeatMap";
 import { EventRepository } from "../../../repositories/EventRepository";
 import { SeatRepository } from "../../../repositories/SeatRepository";
+import { EventUI, Seat } from "../../../types/ticket";
 import { formatEther } from "viem";
-import { SeatMap } from "../../../components/ticketing/SeatMap";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
 
 export default function SeatsPage() {
   const params = useParams();
@@ -42,6 +42,11 @@ export default function SeatsPage() {
       setSeats(seatsData);
     } catch (error) {
       console.error("Failed to load data:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
     } finally {
       setLoading(false);
     }
@@ -135,7 +140,7 @@ export default function SeatsPage() {
                         <div key={seat.seatId} className="flex justify-between text-sm glass-button p-2 rounded">
                           <span className="font-mono">{seat.seatId}</span>
                           <span className="font-semibold font-mono">
-                            {parseFloat(formatEther(seat.price)).toFixed(4)} ETH
+                            {parseFloat(formatEther(seat.price)).toFixed(4)} MON
                           </span>
                         </div>
                       ))}
@@ -152,7 +157,7 @@ export default function SeatsPage() {
 
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span className="font-mono">Total:</span>
-                      <span className="monad-gradient-text font-mono">{totalPrice.toFixed(4)} ETH</span>
+                      <span className="monad-gradient-text font-mono">{totalPrice.toFixed(4)} MON</span>
                     </div>
                   </div>
                 )}

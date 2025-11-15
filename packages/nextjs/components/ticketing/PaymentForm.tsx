@@ -175,7 +175,7 @@ export const PaymentForm = ({ totalAmount, onSubmit, reservationId }: PaymentFor
       <div className="glass-card-strong p-6 monad-glow">
         <div className="flex justify-between items-center text-xl font-bold">
           <span className="font-mono">Total Amount:</span>
-          <span className="monad-gradient-text font-mono">{totalAmount.toFixed(4)} ETH</span>
+          <span className="monad-gradient-text font-mono">{totalAmount.toFixed(4)} MON</span>
         </div>
       </div>
 
@@ -190,7 +190,7 @@ export const PaymentForm = ({ totalAmount, onSubmit, reservationId }: PaymentFor
             Processing Payment...
           </>
         ) : (
-          `Pay ${totalAmount.toFixed(4)} ETH`
+          `Pay ${totalAmount.toFixed(4)} MON`
         )}
       </button>
     </form>

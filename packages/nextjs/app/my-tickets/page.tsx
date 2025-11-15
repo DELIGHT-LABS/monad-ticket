@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
-import { createPublicClient, http, formatEther } from "viem";
-import { hardhat } from "viem/chains";
-import deployedContracts from "../../contracts/deployedContracts";
-import { EventUI, Seat } from "../../types/ticket";
-import { EventRepository } from "../../repositories/EventRepository";
-import { TicketIcon, CalendarIcon, MapPinIcon, WalletIcon } from "@heroicons/react/24/outline";
-import { Address } from "@scaffold-ui/components";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import deployedContracts from "../../contracts/deployedContracts";
+import { EventRepository } from "../../repositories/EventRepository";
+import { EventUI } from "../../types/ticket";
+import { Address } from "@scaffold-ui/components";
+import { createPublicClient, formatEther, http } from "viem";
+import { hardhat } from "viem/chains";
+import { useAccount } from "wagmi";
+import { CalendarIcon, MapPinIcon, TicketIcon, WalletIcon } from "@heroicons/react/24/outline";
 
 interface UserTicket {
   tokenId: bigint;
@@ -239,7 +239,7 @@ export default function MyTicketsPage() {
 
                         <div className="mt-4 glass-button p-3 rounded-lg inline-block">
                           <p className="text-xs font-mono text-base-content/70">Total Value</p>
-                          <p className="text-xl font-bold monad-gradient-text font-mono">{totalValue.toFixed(4)} ETH</p>
+                          <p className="text-xl font-bold monad-gradient-text font-mono">{totalValue.toFixed(4)} MON</p>
                         </div>
                       </div>
                     </div>
@@ -264,7 +264,7 @@ export default function MyTicketsPage() {
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-mono text-base-content/70">Price Paid</span>
                               <span className="text-sm font-bold font-mono">
-                                {parseFloat(formatEther(ticket.price)).toFixed(4)} ETH
+                                {parseFloat(formatEther(ticket.price)).toFixed(4)} MON
                               </span>
                             </div>
                             <div className="flex justify-between items-center">

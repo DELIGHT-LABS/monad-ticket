@@ -1,6 +1,6 @@
-import { Seat, Reservation } from "../types/ticket";
 import deployedContracts from "../contracts/deployedContracts";
-import { createPublicClient, http, formatEther } from "viem";
+import { Reservation, Seat } from "../types/ticket";
+import { createPublicClient, formatEther, http } from "viem";
 import { hardhat } from "viem/chains";
 
 // Get the contract ABI and address
@@ -25,19 +25,28 @@ const publicClient = createPublicClient({
 });
 
 // Parse seat ID to extract section, row, and number
-// Format: "VIP-A01", "STD-B02", etc.
+// Format: "VIP-A01", "STD-B02", "CONF-001" etc.
 const parseSeatId = (seatId: string): { section: string; row: number; number: number } => {
-  // Extract section (e.g., "VIP", "STD", "ECO")
+  // Extract section (e.g., "VIP", "STD", "ECO", "CONF")
   const parts = seatId.split("-");
   const section = parts[0] || "A";
 
-  // Extract row and number from second part (e.g., "A01" -> row: A=1, num: 01)
+  // Extract row and number from second part
   const seatPart = parts[1] || "A01";
   const rowLetter = seatPart.charAt(0);
-  const row = rowLetter.charCodeAt(0) - 64; // A=1, B=2, etc.
-  const number = parseInt(seatPart.substring(1)) || 1;
 
-  return { section, row, number };
+  // Check if first character is a letter (A-Z) or digit (0-9)
+  if (/[A-Z]/i.test(rowLetter)) {
+    // Format: "A01", "B02" -> row: A=1, B=2, etc.
+    const row = rowLetter.toUpperCase().charCodeAt(0) - 64; // A=1, B=2, etc.
+    const number = parseInt(seatPart.substring(1)) || 1;
+    return { section, row, number };
+  } else {
+    // Format: "001", "002", "100" -> all in row 1, number: 1, 2, 100
+    const row = 1;
+    const number = parseInt(seatPart) || 1;
+    return { section, row, number };
+  }
 };
 
 const MOCK_RESERVATIONS: Map<string, Reservation> = new Map();
